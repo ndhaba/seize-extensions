@@ -1,20 +1,20 @@
 {
-  "buildTime": "2026-07-08T23:17:09.341Z",
+  "buildTime": "2026-07-08T23:24:17.321Z",
   "builtWith": {
     "toolchain": "1.0.0-alpha.92",
     "types": "1.0.0-alpha.92"
   },
   "repository": {
-    "name": "Template Extensions (0.9)",
-    "description": "Paperback extensions designed as templates to help developers get started quickly. Maintained by Inkdex."
+    "name": "Seize Extensions",
+    "description": "Seize's extensions for Paperback 0.9."
   },
   "sources": [
     {
-      "name": "Content Template",
-      "description": "Template that shows the functionality of content providing extensions.",
+      "name": "MangaDraft",
+      "description": "Extension that pulls content from https://mangadraft.com/",
       "version": "1.0.0-alpha.4",
       "icon": "icon.png",
-      "language": "en",
+      "language": "fr",
       "contentRating": "SAFE",
       "capabilities": [
         32,
@@ -25,12 +25,11 @@
       "badges": [],
       "developers": [
         {
-          "name": "Celarye",
-          "website": "https://celarye.dev",
-          "github": "https://github.com/Celarye"
+          "name": "Seize",
+          "github": "https://github.com/ndhaba"
         }
       ],
-      "id": "ContentTemplate"
+      "id": "MangaDraft"
     }
   ]
 }
