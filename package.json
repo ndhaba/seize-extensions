@@ -1,7 +1,7 @@
 {
-  "name": "Template Extensions (0.9)",
+  "name": "Seize Extensions (0.9)",
   "private": true,
-  "description": "Paperback extensions designed as templates to help developers get started quickly. Maintained by Inkdex.",
+  "description": "Seize's extensions for Paperback 0.9.",
   "type": "module",
   "scripts": {
     "tsc": "tsc",
@@ -25,5 +25,8 @@
     "oxlint": "^1.72.0",
     "oxlint-tsgolint": "^0.24.0",
     "typescript": "^6.0.3"
+  },
+  "allowScripts": {
+    "protobufjs@7.6.4": true
   }
 }
