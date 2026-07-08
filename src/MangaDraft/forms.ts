@@ -78,10 +78,7 @@ class SourceUIPlaygroundForm extends Form {
 
               ButtonRow("addNewItem", {
                 title: "Add New Item",
-                onSelect: Application.Selector(
-                  this as SourceUIPlaygroundForm,
-                  "addNewItem",
-                ),
+                onSelect: Application.Selector(this as SourceUIPlaygroundForm, "addNewItem"),
               }),
             ]),
           ]

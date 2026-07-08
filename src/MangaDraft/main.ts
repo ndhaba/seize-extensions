@@ -39,9 +39,7 @@ import { MainInterceptor } from "./network";
 import type MangaDraftConfig from "./pbconfig";
 
 // Main extension class
-export class MangaDraftExtension implements ExtensionImpl<
-  typeof MangaDraftConfig
-> {
+export class MangaDraftExtension implements ExtensionImpl<typeof MangaDraftConfig> {
   // Implementation of the main rate limiter
   mainRateLimiter = new BasicRateLimiter("main", {
     numberOfRequests: 15,
@@ -88,11 +86,7 @@ export class MangaDraftExtension implements ExtensionImpl<
       type: DiscoverSectionType.simpleCarousel,
     };
 
-    return [
-      discover_section_template1,
-      discover_section_template2,
-      discover_section_template3,
-    ];
+    return [discover_section_template1, discover_section_template2, discover_section_template3];
   }
 
   // Populates both the discover sections
@@ -129,9 +123,7 @@ export class MangaDraftExtension implements ExtensionImpl<
       items: Array.from(Array(content.length / j)).map(() => {
         const result = {
           mangaId: content[i]?.titleId,
-          title: content[i]?.primaryTitle
-            ? content[i]?.primaryTitle
-            : "Unknown Title",
+          title: content[i]?.primaryTitle ? content[i]?.primaryTitle : "Unknown Title",
           subtitle: content[i]?.secondaryTitles[0],
           imageUrl: content[i]?.thumbnailUrl ? content[i]?.thumbnailUrl : "",
           type: type,
@@ -167,11 +159,9 @@ export class MangaDraftExtension implements ExtensionImpl<
       const manga = content[i];
       if (!manga) continue;
       if (
-        (manga.primaryTitle.toLowerCase().indexOf(query.title.toLowerCase()) !=
-          -1 &&
+        (manga.primaryTitle.toLowerCase().indexOf(query.title.toLowerCase()) != -1 &&
           mode == "include") ||
-        (manga.primaryTitle.toLowerCase().indexOf(query.title.toLowerCase()) ==
-          -1 &&
+        (manga.primaryTitle.toLowerCase().indexOf(query.title.toLowerCase()) == -1 &&
           mode == "exclude")
       ) {
         if (manga.titleId) {
@@ -188,19 +178,15 @@ export class MangaDraftExtension implements ExtensionImpl<
           const secondaryTitles = manga.secondaryTitles[j];
           if (!secondaryTitles) continue;
           if (
-            (secondaryTitles.toLowerCase().indexOf(query.title.toLowerCase()) !=
-              -1 &&
+            (secondaryTitles.toLowerCase().indexOf(query.title.toLowerCase()) != -1 &&
               mode == "include") ||
-            (secondaryTitles.toLowerCase().indexOf(query.title.toLowerCase()) ==
-              -1 &&
+            (secondaryTitles.toLowerCase().indexOf(query.title.toLowerCase()) == -1 &&
               mode == "exclude")
           ) {
             if (manga.titleId) {
               const result: SearchResultItem = {
                 mangaId: manga.titleId,
-                title: manga.primaryTitle
-                  ? manga.primaryTitle
-                  : "Unknown Title",
+                title: manga.primaryTitle ? manga.primaryTitle : "Unknown Title",
                 subtitle: manga.secondaryTitles[0] ?? "",
                 imageUrl: manga.thumbnailUrl ? manga.thumbnailUrl : "",
               };
@@ -268,9 +254,7 @@ export class MangaDraftExtension implements ExtensionImpl<
           mangaInfo: {
             thumbnailUrl: manga.thumbnailUrl ? manga.thumbnailUrl : "",
             synopsis: manga.synopsis ? manga.synopsis : "No synopsis.",
-            primaryTitle: manga.primaryTitle
-              ? manga.primaryTitle
-              : "Unknown Title",
+            primaryTitle: manga.primaryTitle ? manga.primaryTitle : "Unknown Title",
             secondaryTitles: manga.secondaryTitles ? manga.secondaryTitles : [],
             contentRating,
             status: manga.status,
@@ -287,10 +271,7 @@ export class MangaDraftExtension implements ExtensionImpl<
   }
 
   // Populates the chapter list
-  async getChapters(
-    sourceManga: SourceManga,
-    sinceDate?: Date,
-  ): Promise<Chapter[]> {
+  async getChapters(sourceManga: SourceManga, sinceDate?: Date): Promise<Chapter[]> {
     // Can be used to only return new chapters. Not used here, instead the whole chapter list gets returned
     void sinceDate;
 
@@ -307,12 +288,8 @@ export class MangaDraftExtension implements ExtensionImpl<
             const chapter: Chapter = {
               chapterId: chaptersData.chapterId,
               sourceManga,
-              langCode: chaptersData.languageCode
-                ? chaptersData.languageCode
-                : "EN",
-              chapNum: chaptersData.chapterNumber
-                ? chaptersData.chapterNumber
-                : j + 1,
+              langCode: chaptersData.languageCode ? chaptersData.languageCode : "EN",
+              chapNum: chaptersData.chapterNumber ? chaptersData.chapterNumber : j + 1,
               title: manga.primaryTitle,
               volume: chaptersData.volumeNumber,
             };
