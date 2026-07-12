@@ -50,7 +50,7 @@ export async function fetchJson(url: string, referer: string = url) {
  * @returns An object mapping global variable names to their parsed values
  * @throws {SyntaxError} If a matched assignment contains invalid JSON
  */
-export function scrapeGlobals($doc: CheerioAPI): Record<string, any | undefined>;
+export function scrapeGlobals($doc: CheerioAPI): Record<string, any>;
 
 /**
  * Extracts JSON-serializable values assigned to `window` globals from

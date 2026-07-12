@@ -1,14 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 /* Copyright © 2025 Inkdex */
 
-// TODO:
-// - Fix exclude search
-// - Add the English name to the title view
-// - Add additional info to the title view
-// - Make getChapterDetails only return new chapters
-// - Add content settings support to search
-// - Remove the content.json file and switch to cheerio
-
 import {
   BasicRateLimiter,
   ContentRating,

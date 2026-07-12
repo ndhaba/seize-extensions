@@ -1,6 +1,5 @@
 import {
   ContentRating,
-  type DiscoverSectionItem,
   type ProminentCarouselItem,
   type SimpleCarouselItem,
 } from "@paperback/types";
