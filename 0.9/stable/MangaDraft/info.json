@@ -1,0 +1,1 @@
+{"name":"MangaDraft","description":"Extension that pulls content from https://mangadraft.com/","version":"1.0.0-alpha.4","icon":"icon.png","language":"fr","contentRating":"SAFE","capabilities":[4,64,1],"badges":[],"developers":[{"name":"Seize","github":"https://github.com/ndhaba"}],"id":"MangaDraft"}
