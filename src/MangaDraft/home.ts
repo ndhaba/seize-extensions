@@ -1,5 +1,4 @@
 import {
-  ContentRating,
   DiscoverSectionType,
   type DiscoverSection,
   type DiscoverSectionItem,
@@ -140,7 +139,6 @@ function parseSectionItem(entry: any) {
     mangaId: entry.id.toString(),
     imageUrl: entry.avatar as string,
     title: (entry.title || entry.name) as string,
-    contentRating: ContentRating.EVERYONE,
   };
 }
 

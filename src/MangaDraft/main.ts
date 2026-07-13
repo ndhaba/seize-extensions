@@ -203,22 +203,29 @@ export class MangaDraftExtension implements ExtensionImpl<typeof MangaDraftConfi
   getTomedChapters(cat: any, source: SourceManga): Chapter[] {
     const chapters: Chapter[] = [];
     let chapterCounter = 1;
+    const pushChapter = (chapter: any, tome: any) => {
+      const chapNumDefault = chapterCounter++;
+      if (chapter.price_credit > 0) return;
+      const [title, chapNum] = this.extractChapterNumber(chapter.name, chapNumDefault);
+      // :(
+      void chapNum;
+      chapters.push({
+        chapterId: chapter.id,
+        sourceManga: source,
+        langCode: source.mangaInfo.additionalInfo!.langCode!,
+        chapNum: chapNumDefault,
+        title: title,
+        volume: tome.order,
+        publishDate: new Date(chapter.published_at),
+      });
+    };
     for (const tome of cat.TOME) {
-      for (const chapter of cat.CHAPTER[tome.id]) {
-        const chapNumDefault = chapterCounter++;
-        if (chapter.price_credit > 0) continue;
-        const [title, chapNum] = this.extractChapterNumber(chapter.name, chapNumDefault);
-        // :(
-        void chapNum;
-        chapters.push({
-          chapterId: chapter.id,
-          sourceManga: source,
-          langCode: source.mangaInfo.additionalInfo!.langCode!,
-          chapNum: chapNumDefault,
-          title: title,
-          volume: tome.order,
-          publishDate: new Date(chapter.published_at),
-        });
+      if (cat.CHAPTER[tome.id]) {
+        for (const chapter of cat.CHAPTER[tome.id]) {
+          pushChapter(chapter, tome);
+        }
+      } else {
+        pushChapter(tome, { order: 0 });
       }
     }
     return chapters;
@@ -307,7 +314,6 @@ export class MangaDraftExtension implements ExtensionImpl<typeof MangaDraftConfi
           mangaId: result.id.toString(),
           title: result.name,
           imageUrl: result.avatar,
-          contentRating: ContentRating.EVERYONE,
         };
       });
     return { items };
@@ -328,7 +334,6 @@ export class MangaDraftExtension implements ExtensionImpl<typeof MangaDraftConfi
         title: result.name,
         subtitle: result.user.name,
         imageUrl: result.avatar,
-        contentRating: ContentRating.EVERYONE,
       };
     });
     return {
