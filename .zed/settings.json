@@ -5,5 +5,12 @@
 {
   "formatter": {
     "language_server": { "name": "oxfmt" }
-  }
+  },
+  "language_servers": [
+    "!eslint",
+    "!tailwindcss-language-server",
+    "!typescript-language-server",
+    "vtsls",
+    "..."
+  ]
 }
