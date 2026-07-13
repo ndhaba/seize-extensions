@@ -4,7 +4,6 @@
 import {
   BasicRateLimiter,
   ContentRating,
-  DiscoverSectionType,
   type AdvancedSearchForm,
   type Chapter,
   type ChapterDetails,
@@ -22,7 +21,7 @@ import {
 } from "@paperback/types";
 
 import CatalogParameters from "./catalog";
-import { getHomePageData, type HomePageData } from "./home";
+import HomePage from "./home";
 import type MangaDraftConfig from "./pbconfig";
 import {
   SORTING_OPTIONS,
@@ -59,85 +58,28 @@ const ACCESS_TYPES: Partial<Record<string, string>> = {
 
 // Main extension class
 export class MangaDraftExtension implements ExtensionImpl<typeof MangaDraftConfig> {
-  homePageData: HomePageData | undefined;
-  catalogParams: CatalogParameters | undefined;
+  catalogParams: CatalogParameters = new CatalogParameters();
+  homePage: HomePage = new HomePage(this.catalogParams);
 
-  // Implementation of the main rate limiter
   mainRateLimiter = new BasicRateLimiter("main", {
     numberOfRequests: 15,
     bufferInterval: 10,
     ignoreImages: true,
   });
 
-  // Method from the Extension interface which we implement, initializes the rate limiter, interceptor, discover sections and search filters
   async initialise(): Promise<void> {
     this.mainRateLimiter.registerInterceptor();
-    this.homePageData = await getHomePageData();
-    this.catalogParams = new CatalogParameters();
   }
 
-  async getDiscoverSections(): Promise<DiscoverSection[]> {
-    return [
-      {
-        id: "originals",
-        title: "MangaDraft Originals",
-        subtitle: "Des séries exclusives, à lire uniquement sur Mangadraft",
-        type: DiscoverSectionType.prominentCarousel,
-      },
-      {
-        id: "contest",
-        title: this.homePageData!.contest.title,
-        subtitle: this.homePageData!.contest.description,
-        type: DiscoverSectionType.simpleCarousel,
-      },
-      {
-        id: "trending",
-        title: "Trending Today",
-        type: DiscoverSectionType.simpleCarousel,
-      },
-      {
-        id: "sponsors",
-        title: "Sponsored Projects",
-        type: DiscoverSectionType.simpleCarousel,
-      },
-      {
-        id: "genres",
-        title: "Explore by Genre",
-        type: DiscoverSectionType.genres,
-      },
-    ];
+  getDiscoverSections(): Promise<DiscoverSection[]> {
+    return this.homePage.getDiscoverSections();
   }
 
-  // Populates both the discover sections
-  async getDiscoverSectionItems(
+  getDiscoverSectionItems(
     section: DiscoverSection,
-    metadata: number | undefined,
+    metadata?: number,
   ): Promise<PagedResults<DiscoverSectionItem>> {
-    void metadata;
-
-    switch (section.id) {
-      case "originals":
-        return { items: this.homePageData!.originals };
-      case "contest":
-        return { items: this.homePageData!.contest.entries };
-      case "trending":
-        return { items: this.homePageData!.trending };
-      case "sponsors":
-        return { items: this.homePageData!.sponsors };
-      case "genres":
-        await this.catalogParams!.loadIfNeeded();
-        return {
-          items: this.catalogParams!.getGenreTags().map((tag) => {
-            return {
-              type: "genresCarouselItem",
-              searchQuery: { title: "", metadata: { ...DEFAULT_SEARCH_METADATA, genre: tag.id } },
-              name: tag.title,
-            };
-          }),
-        };
-      default:
-        return { items: [] };
-    }
+    return this.homePage.getDiscoverSectionItems(section, metadata);
   }
 
   // Populates the title details
