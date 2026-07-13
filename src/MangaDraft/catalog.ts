@@ -29,6 +29,10 @@ function emojify(genre: [string, string]) {
   return emoji ? `${emoji} ${genre[1]}` : genre[1];
 }
 
+/**
+ * Class for dynamically loading catalog parameters for searching
+ * on MangaDraft
+ */
 export default class CatalogParameters {
   private genres: Map<number, [string, string]> = new Map();
   private languages: Map<number, [string, string]> = new Map();
@@ -38,6 +42,9 @@ export default class CatalogParameters {
 
   constructor() {}
 
+  /**
+   * Loads/reloads the parameters unconditionally
+   */
   async load() {
     const $document = await fetchPage("https://www.mangadraft.com/catalog");
     const { data } = scrapeGlobals($document, ["data"]);
@@ -60,6 +67,12 @@ export default class CatalogParameters {
     this.lastUpdated = new Date();
   }
 
+  /**
+   * Loads/reloads the parameters only if needed
+   *
+   * This runs if parameters haven't previously been loaded, and if
+   * the parameters haven't been updated in a while.
+   */
   async loadIfNeeded() {
     const last = this.lastUpdated;
     if (last === undefined || Date.now() - last.getTime() >= RELOAD_MS) {
@@ -67,6 +80,9 @@ export default class CatalogParameters {
     }
   }
 
+  /**
+   * @returns A list of `Tag`s representing MangaDraft's genres
+   */
   getGenreTags(): Tag[] {
     return Array.from(this.genres.entries())
       .sort((a, b) => a[0] - b[0])
@@ -75,11 +91,20 @@ export default class CatalogParameters {
       });
   }
 
+  /**
+   * Gets the tag of the language with the given ID
+   * @param id The ID
+   * @param emoji Whether to include a county emoji in the label
+   * @returns The tag
+   */
   getLanguageTagById(id: number, emoji?: boolean): Tag {
     const lang = this.languages.get(id)!;
     return { id: lang[0], title: emoji ? emojify(lang) : lang[1] };
   }
 
+  /**
+   * @returns A list of `Tag`s representing MangaDraft's languages
+   */
   getLanguageTags(): Tag[] {
     return Array.from(this.languages.entries())
       .sort((a, b) => a[0] - b[0])
@@ -88,10 +113,18 @@ export default class CatalogParameters {
       });
   }
 
+  /**
+   * Gets the tag of the format with the given search value
+   * @param value The search value
+   * @returns The tag
+   */
   getFormatTagByValue(value: string): Tag {
     return { id: value, title: FORMAT_ENGLISH[value] || this.formats.get(value)! };
   }
 
+  /**
+   * @returns A list of `Tag`s representing MangaDraft's formats
+   */
   getFormatTags(): Tag[] {
     return Array.from(
       this.formats.entries().map((entry) => {
@@ -100,10 +133,18 @@ export default class CatalogParameters {
     );
   }
 
+  /**
+   * Gets the tag of the status with the given ID
+   * @param id The ID
+   * @returns The tag
+   */
   getStatusTagById(id: number): Tag {
     return { id: id.toString(), title: STATUS_ENGLISH[id] || this.status.get(id)! };
   }
 
+  /**
+   * @returns A list of `Tag`s representing MangaDraft's status values
+   */
   getStatusTags(): Tag[] {
     return Array.from(this.status.entries())
       .sort((a, b) => a[0] - b[0])
