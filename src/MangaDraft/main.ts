@@ -23,16 +23,7 @@ import {
 import CatalogParameters from "./catalog";
 import HomePage from "./home";
 import type MangaDraftConfig from "./pbconfig";
-import {
-  SORTING_OPTIONS,
-  ProjectSearchForm,
-  type ProjectSearchMetadata,
-  getProjectOrderFromId,
-  ProjectOrder,
-  getProjectOrderQueryParam,
-  getProjectSearchQueryParams,
-  DEFAULT_SEARCH_METADATA,
-} from "./search";
+import { SORT_OPTIONS, ProjectSearchForm, ProjectSearchMetadata, ProjectOrder } from "./search";
 import { fetchJson, fetchPage, scrapeGlobals } from "./utils";
 
 const CHAPTER_WORDS = new Set(["chapitre", "chapter", "episode"]);
@@ -325,8 +316,8 @@ export class MangaDraftExtension implements ExtensionImpl<typeof MangaDraftConfi
     sortingOption?: SortingOption,
   ): Promise<PagedResults<SearchResultItem>> {
     const page = metadata || 1;
-    const sort = sortingOption ? getProjectOrderFromId(sortingOption.id) : ProjectOrder.Trending;
-    const url = `https://www.mangadraft.com/api/catalog/projects?number=16&page=${page}&${getProjectOrderQueryParam(sort)}&${getProjectSearchQueryParams(query.metadata || DEFAULT_SEARCH_METADATA)}&locale=fr`;
+    const sort = sortingOption ? ProjectOrder.fromId(sortingOption.id) : ProjectOrder.Trending;
+    const url = `https://www.mangadraft.com/api/catalog/projects?number=16&page=${page}&${ProjectOrder.getQueryParam(sort)}&${ProjectSearchMetadata.getQueryParams(query.metadata)}&locale=fr`;
     const response = await fetchJson(url, "https://www.mangadraft.com/catalog");
     const items: SearchResultItem[] = (response.data as any[]).map((result: any) => {
       return {
@@ -346,7 +337,7 @@ export class MangaDraftExtension implements ExtensionImpl<typeof MangaDraftConfi
     if (query.title.length > 0) {
       return Promise.resolve([]);
     } else {
-      return Promise.resolve(SORTING_OPTIONS);
+      return Promise.resolve(SORT_OPTIONS);
     }
   }
 }

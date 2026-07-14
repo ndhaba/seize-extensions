@@ -8,7 +8,7 @@ import {
 } from "@paperback/types";
 
 import type CatalogParameters from "./catalog";
-import { DEFAULT_SEARCH_METADATA } from "./search";
+import { ProjectSearchMetadata } from "./search";
 import { fetchPage, scrapeGlobals } from "./utils";
 
 const RELOAD_MS = 1000 * 60 * 60 * 24;
@@ -123,7 +123,10 @@ export default class HomePage {
           items: this.catalogParams.getGenreTags().map((tag) => {
             return {
               type: "genresCarouselItem",
-              searchQuery: { title: "", metadata: { ...DEFAULT_SEARCH_METADATA, genre: tag.id } },
+              searchQuery: {
+                title: "",
+                metadata: { ...ProjectSearchMetadata.DEFAULT, genre: tag.id },
+              },
               name: tag.title,
             };
           }),

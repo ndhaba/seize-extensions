@@ -8,8 +8,12 @@ import {
 
 import type CatalogParameters from "./catalog";
 
+/**
+ * Enum representing different ways projects can be ordered
+ * in the MangaDraft catalog
+ */
 export enum ProjectOrder {
-  Trending = 0,
+  Trending = 1,
   Popular,
   Recent,
   Likes,
@@ -18,29 +22,39 @@ export enum ProjectOrder {
   Name,
 }
 
-function getProjectOrderQueryValue(order: ProjectOrder) {
-  switch (order) {
-    case ProjectOrder.Recent:
-      return "news";
-    default:
-      return ProjectOrder[order].toLowerCase();
+export namespace ProjectOrder {
+  /**
+   * Converts a numeric ID to a `ProjectOrder` enum member
+   * @param id The ID as a string or number
+   * @returns The associated enum member
+   */
+  export function fromId(id: string | number): ProjectOrder {
+    id = typeof id == "number" ? id : parseInt(id);
+    if (!ProjectOrder[id]) throw new TypeError(`Unrecognized project order ID: ${id}`);
+    return id as ProjectOrder;
+  }
+
+  /**
+   * Builds an API query parameter for the given project order
+   * @param order The project order
+   * @returns The query parameter, as it would appear in /api/catalog/projects
+   */
+  export function getQueryParam(order?: ProjectOrder) {
+    if (!order) return "";
+    const value = order === ProjectOrder.Recent ? "news" : ProjectOrder[order].toLowerCase();
+    return `order=${value}`;
   }
 }
 
-export function getProjectOrderQueryParam(order?: ProjectOrder) {
-  return (order && `order=${getProjectOrderQueryValue(order)}`) || "";
-}
-
-export function getProjectOrderFromId(id: string | number): ProjectOrder {
-  return (typeof id == "number" ? id : parseInt(id)) as ProjectOrder;
-}
-
-export const SORTING_OPTIONS: SortingOption[] = Object.keys(ProjectOrder)
+export const SORT_OPTIONS: SortingOption[] = Object.keys(ProjectOrder)
   .filter((v) => !isNaN(Number(v)))
   .map((v) => {
     return { id: v, label: ProjectOrder[parseInt(v)]! };
   });
 
+/**
+ * Type containing all options for filtering a catalog search
+ */
 export type ProjectSearchMetadata = {
   type: "all" | "bd.manga" | "webtoons" | "novels" | "artbooks";
   section: "indepolis" | "original" | "neoville";
@@ -50,22 +64,30 @@ export type ProjectSearchMetadata = {
   language: string;
 };
 
-export const DEFAULT_SEARCH_METADATA: ProjectSearchMetadata = {
-  type: "all",
-  section: "indepolis",
-  status: "any",
-  format: "any",
-  genre: "any",
-  language: "any",
-};
+export namespace ProjectSearchMetadata {
+  export const DEFAULT: ProjectSearchMetadata = {
+    type: "all",
+    section: "indepolis",
+    status: "any",
+    format: "any",
+    genre: "any",
+    language: "any",
+  };
 
-export function getProjectSearchQueryParams(params: ProjectSearchMetadata) {
-  let string = `type=${params.type}&section=${params.section}`;
-  if (params.status != "any") string += `&status=${params.status}`;
-  if (params.format != "any") string += `&format=${params.format}`;
-  if (params.genre != "any") string += `&genre=${params.genre}`;
-  if (params.language != "any") string += `&language=${params.language}`;
-  return string;
+  /**
+   * Builds a list of API query parameters for the given search metadata
+   * @param metadata The metadata (defaults to `DEFAULT` if not provided)
+   * @returns The API query parameters, as they would appear in /api/catalog/projects
+   */
+  export function getQueryParams(metadata?: ProjectSearchMetadata) {
+    metadata = metadata || DEFAULT;
+    let string = `type=${metadata.type}&section=${metadata.section}`;
+    if (metadata.status != "any") string += `&status=${metadata.status}`;
+    if (metadata.format != "any") string += `&format=${metadata.format}`;
+    if (metadata.genre != "any") string += `&genre=${metadata.genre}`;
+    if (metadata.language != "any") string += `&language=${metadata.language}`;
+    return string;
+  }
 }
 
 export class ProjectSearchForm extends AdvancedSearchForm {
@@ -76,7 +98,7 @@ export class ProjectSearchForm extends AdvancedSearchForm {
   constructor(query: SearchQuery<ProjectSearchMetadata>, catalogParams: CatalogParameters) {
     super();
     this.visible = query.title.trim().length == 0;
-    this.query = query.metadata || DEFAULT_SEARCH_METADATA;
+    this.query = query.metadata || ProjectSearchMetadata.DEFAULT;
     this.catalogParams = catalogParams;
   }
 
