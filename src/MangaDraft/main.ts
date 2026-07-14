@@ -23,6 +23,7 @@ import {
 import CatalogParameters from "./catalog";
 import HomePage from "./home";
 import type MangaDraftConfig from "./pbconfig";
+import RatingTracker from "./rating";
 import { SORT_OPTIONS, ProjectSearchForm, ProjectSearchMetadata, ProjectOrder } from "./search";
 import { fetchJson, fetchPage, scrapeGlobals } from "./utils";
 
@@ -50,7 +51,8 @@ const ACCESS_TYPES: Partial<Record<string, string>> = {
 // Main extension class
 export class MangaDraftExtension implements ExtensionImpl<typeof MangaDraftConfig> {
   catalogParams: CatalogParameters = new CatalogParameters();
-  homePage: HomePage = new HomePage(this.catalogParams);
+  ratingTracker: RatingTracker = new RatingTracker("mangadraft_ratings");
+  homePage: HomePage = new HomePage(this.catalogParams, this.ratingTracker);
 
   mainRateLimiter = new BasicRateLimiter("main", {
     numberOfRequests: 15,
@@ -124,6 +126,11 @@ export class MangaDraftExtension implements ExtensionImpl<typeof MangaDraftConfi
         }
       }
     }
+    if (this.ratingTracker.setContentRating(mangaId, contentRating)) {
+      if (this.homePage.contains(mangaId)) {
+        Application.invalidateDiscoverSections();
+      }
+    }
     return {
       mangaId: mangaId,
       mangaInfo: {
@@ -151,6 +158,12 @@ export class MangaDraftExtension implements ExtensionImpl<typeof MangaDraftConfi
   // Populates the chapter list
   async getChapters(sourceManga: SourceManga, sinceDate?: Date): Promise<Chapter[]> {
     void sinceDate;
+    const mangaId = sourceManga.mangaId;
+    if (this.ratingTracker.setContentRating(mangaId, sourceManga.mangaInfo.contentRating)) {
+      if (this.homePage.contains(mangaId)) {
+        Application.invalidateDiscoverSections();
+      }
+    }
     switch (sourceManga.mangaInfo.additionalInfo!.projectType) {
       case "7": // webtoon
       case "8": // nolovel
@@ -305,6 +318,7 @@ export class MangaDraftExtension implements ExtensionImpl<typeof MangaDraftConfi
           mangaId: result.id.toString(),
           title: result.name,
           imageUrl: result.avatar,
+          contentRating: this.ratingTracker.getContentRating(result.id),
         };
       });
     return { items };
@@ -325,6 +339,7 @@ export class MangaDraftExtension implements ExtensionImpl<typeof MangaDraftConfi
         title: result.name,
         subtitle: result.user.name,
         imageUrl: result.avatar,
+        contentRating: this.ratingTracker.getContentRating(result.id),
       };
     });
     return {

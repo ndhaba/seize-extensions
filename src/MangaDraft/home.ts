@@ -8,6 +8,7 @@ import {
 } from "@paperback/types";
 
 import type CatalogParameters from "./catalog";
+import type RatingTracker from "./rating";
 import { ProjectSearchMetadata } from "./search";
 import { fetchPage, scrapeGlobals } from "./utils";
 
@@ -20,6 +21,8 @@ export default class HomePage {
   // properties
   private lastUpdated: Date | undefined;
   private catalogParams: CatalogParameters;
+  private ratingTracker: RatingTracker;
+  private projects: Set<string> = new Set();
   // data
   private originals: ProminentCarouselItem[] = [];
   private contestTitle: string = "";
@@ -28,23 +31,25 @@ export default class HomePage {
   private sponsors: SimpleCarouselItem[] = [];
   private trending: SimpleCarouselItem[] = [];
 
-  constructor(catalogParams: CatalogParameters) {
+  constructor(catalogParams: CatalogParameters, ratingTracker: RatingTracker) {
     this.catalogParams = catalogParams;
+    this.ratingTracker = ratingTracker;
   }
 
   /**
    * Loads the home page unconditionally
    */
   async load() {
+    this.projects.clear();
     this.lastUpdated = new Date();
     const $document = await fetchPage("https://www.mangadraft.com/");
     const { data } = scrapeGlobals($document, ["banners", "data"]);
-    this.originals = data.originals.map(parseProminentSectionItem);
+    this.originals = data.originals.map((e: any) => this.parseProminentSectionItem(e));
     this.contestTitle = data.contest.title;
     this.contestDesc = data.contest.subtitle;
-    this.contestEntries = data.contest.data.map(parseSimpleSectionItem);
-    this.sponsors = data.sponsors.data.map(parseSimpleSectionItem);
-    this.trending = data.trending.map(parseSimpleSectionItem);
+    this.contestEntries = data.contest.data.map((e: any) => this.parseSimpleSectionItem(e));
+    this.sponsors = data.sponsors.data.map((e: any) => this.parseSimpleSectionItem(e));
+    this.trending = data.trending.map((e: any) => this.parseSimpleSectionItem(e));
   }
 
   /**
@@ -58,6 +63,16 @@ export default class HomePage {
     if (last === undefined || Date.now() - last.getTime() >= RELOAD_MS) {
       await this.load();
     }
+  }
+
+  /**
+   * Checks whether a project with the given ID is present in the home page's
+   * discover section
+   * @param id The project's ID
+   * @returns Whether it is present
+   */
+  contains(id: number | string): boolean {
+    return this.projects.has(id.toString());
   }
 
   /**
@@ -135,26 +150,28 @@ export default class HomePage {
         return { items: [] };
     }
   }
-}
 
-function parseSectionItem(entry: any) {
-  return {
-    mangaId: entry.id.toString(),
-    imageUrl: entry.avatar as string,
-    title: (entry.title || entry.name) as string,
-  };
-}
+  private parseSectionItem(entry: any) {
+    this.projects.add(entry.id.toString());
+    return {
+      mangaId: entry.id.toString(),
+      imageUrl: entry.avatar as string,
+      title: (entry.title || entry.name) as string,
+      contentRating: this.ratingTracker.getContentRating(entry.id),
+    };
+  }
 
-function parseSimpleSectionItem(entry: any): SimpleCarouselItem {
-  return {
-    type: "simpleCarouselItem",
-    ...parseSectionItem(entry),
-  };
-}
+  private parseSimpleSectionItem(entry: any): SimpleCarouselItem {
+    return {
+      type: "simpleCarouselItem",
+      ...this.parseSectionItem(entry),
+    };
+  }
 
-function parseProminentSectionItem(entry: any): ProminentCarouselItem {
-  return {
-    type: "prominentCarouselItem",
-    ...parseSectionItem(entry),
-  };
+  private parseProminentSectionItem(entry: any): ProminentCarouselItem {
+    return {
+      type: "prominentCarouselItem",
+      ...this.parseSectionItem(entry),
+    };
+  }
 }
