@@ -1,5 +1,5 @@
 {
-  "buildTime": "2026-07-14T19:49:10.739Z",
+  "buildTime": "2026-07-15T23:13:11.143Z",
   "builtWith": {
     "toolchain": "1.0.0-alpha.92",
     "types": "1.0.0-alpha.92"
@@ -19,7 +19,8 @@
       "capabilities": [
         4,
         64,
-        1
+        1,
+        32
       ],
       "badges": [],
       "developers": [
