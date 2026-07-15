@@ -12,28 +12,57 @@ import type RatingTracker from "./rating";
 import { ProjectSearchMetadata } from "./search";
 import { fetchPage, scrapeGlobals } from "./utils";
 
-const RELOAD_MS = 1000 * 60 * 60 * 24;
+const RELOAD_MS = 1000 * 60 * 60 * 8;
+const STATE_KEY = "mangadraft_homepage";
+
+/**
+ * Type representing data from MangaDraft's home page
+ */
+type HomePageData = {
+  originals: ProminentCarouselItem[];
+  contestTitle: string;
+  contestDesc: string;
+  contestEntries: SimpleCarouselItem[];
+  sponsors: SimpleCarouselItem[];
+  trending: SimpleCarouselItem[];
+};
+
+/**
+ * Exists purely to make sure mistakes don't happen when loading
+ * and saving state
+ */
+type HomePageState = {
+  lastUpdated: string;
+  data: HomePageData;
+};
 
 /**
  * Class for loading and managing data from MangaDraft's home page
  */
 export default class HomePage {
-  // properties
+  private data: HomePageData;
   private lastUpdated: Date | undefined;
   private catalogParams: CatalogParameters;
   private ratingTracker: RatingTracker;
   private projects: Set<string> = new Set();
-  // data
-  private originals: ProminentCarouselItem[] = [];
-  private contestTitle: string = "";
-  private contestDesc: string = "";
-  private contestEntries: SimpleCarouselItem[] = [];
-  private sponsors: SimpleCarouselItem[] = [];
-  private trending: SimpleCarouselItem[] = [];
 
   constructor(catalogParams: CatalogParameters, ratingTracker: RatingTracker) {
     this.catalogParams = catalogParams;
     this.ratingTracker = ratingTracker;
+    const state = Application.getState(STATE_KEY) as HomePageState | undefined;
+    if (state) {
+      this.data = state.data;
+      this.lastUpdated = new Date(state.lastUpdated);
+    } else {
+      this.data = {
+        originals: [],
+        contestTitle: "",
+        contestDesc: "",
+        contestEntries: [],
+        sponsors: [],
+        trending: [],
+      };
+    }
   }
 
   /**
@@ -41,15 +70,19 @@ export default class HomePage {
    */
   async load() {
     this.projects.clear();
-    this.lastUpdated = new Date();
     const $document = await fetchPage("https://www.mangadraft.com/");
     const { data } = scrapeGlobals($document, ["banners", "data"]);
-    this.originals = data.originals.map((e: any) => this.parseProminentSectionItem(e));
-    this.contestTitle = data.contest.title;
-    this.contestDesc = data.contest.subtitle;
-    this.contestEntries = data.contest.data.map((e: any) => this.parseSimpleSectionItem(e));
-    this.sponsors = data.sponsors.data.map((e: any) => this.parseSimpleSectionItem(e));
-    this.trending = data.trending.map((e: any) => this.parseSimpleSectionItem(e));
+    this.data.originals = data.originals.map((e: any) => this.parseProminentSectionItem(e));
+    this.data.contestTitle = data.contest.title;
+    this.data.contestDesc = data.contest.subtitle;
+    this.data.contestEntries = data.contest.data.map((e: any) => this.parseSimpleSectionItem(e));
+    this.data.sponsors = data.sponsors.data.map((e: any) => this.parseSimpleSectionItem(e));
+    this.data.trending = data.trending.map((e: any) => this.parseSimpleSectionItem(e));
+    this.lastUpdated = new Date();
+    Application.setState(
+      { lastUpdated: this.lastUpdated.toISOString(), data: this.data } as HomePageState,
+      STATE_KEY,
+    );
   }
 
   /**
@@ -89,8 +122,8 @@ export default class HomePage {
       },
       {
         id: "contest",
-        title: this.contestTitle,
-        subtitle: this.contestDesc,
+        title: this.data.contestTitle,
+        subtitle: this.data.contestDesc,
         type: DiscoverSectionType.simpleCarousel,
       },
       {
@@ -125,13 +158,13 @@ export default class HomePage {
 
     switch (section.id) {
       case "originals":
-        return { items: this.originals };
+        return { items: this.data.originals };
       case "contest":
-        return { items: this.contestEntries };
+        return { items: this.data.contestEntries };
       case "trending":
-        return { items: this.trending };
+        return { items: this.data.trending };
       case "sponsors":
-        return { items: this.sponsors };
+        return { items: this.data.sponsors };
       case "genres":
         await this.catalogParams.loadIfNeeded();
         return {
