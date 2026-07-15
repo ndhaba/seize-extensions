@@ -53,6 +53,10 @@ export default class CatalogParameters {
   private formats: Map<string, string> = new Map();
   private lastUpdated?: Date;
 
+  get lastTimeUpdated() {
+    return this.lastUpdated;
+  }
+
   constructor() {
     const state = Application.getState(STATE_KEY) as CatalogParamState | undefined;
     if (!state) return;

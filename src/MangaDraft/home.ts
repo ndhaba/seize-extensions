@@ -12,7 +12,7 @@ import type RatingTracker from "./rating";
 import { ProjectSearchMetadata } from "./search";
 import { fetchPage, scrapeGlobals } from "./utils";
 
-const RELOAD_MS = 1000 * 60 * 60 * 8;
+const RELOAD_MS = 1000 * 60 * 60 * 2;
 const STATE_KEY = "mangadraft_homepage";
 
 /**
@@ -45,6 +45,10 @@ export default class HomePage {
   private catalogParams: CatalogParameters;
   private ratingTracker: RatingTracker;
   private projects: Set<string> = new Set();
+
+  get lastTimeUpdated() {
+    return this.lastUpdated;
+  }
 
   constructor(catalogParams: CatalogParameters, ratingTracker: RatingTracker) {
     this.catalogParams = catalogParams;

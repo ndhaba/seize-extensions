@@ -4,6 +4,7 @@
 import {
   BasicRateLimiter,
   ContentRating,
+  type Form,
   type AdvancedSearchForm,
   type Chapter,
   type ChapterDetails,
@@ -25,6 +26,7 @@ import HomePage from "./home";
 import type MangaDraftConfig from "./pbconfig";
 import RatingTracker from "./rating";
 import { SORT_OPTIONS, ProjectSearchForm, ProjectSearchMetadata, ProjectOrder } from "./search";
+import SettingsForm from "./settings";
 import { fetchJson, fetchPage, scrapeGlobals } from "./utils";
 
 const CHAPTER_WORDS = new Set(["chapitre", "chapter", "episode"]);
@@ -77,14 +79,14 @@ export class MangaDraftExtension implements ExtensionImpl<typeof MangaDraftConfi
 
   // Populates the title details
   async getMangaDetails(mangaId: string): Promise<SourceManga> {
-    await this.catalogParams!.loadIfNeeded();
+    await this.catalogParams.loadIfNeeded();
     const project = await fetchJson(
       `https://www.mangadraft.com/api/project/${mangaId}?with=genres&locale=fr`,
       `https://www.mangadraft.com/`,
     );
     const tagGroups: TagSection[] = [];
     const metaTags: Tag[] = [];
-    const languageTag = this.catalogParams!.getLanguageTagById(project.data.language, true);
+    const languageTag = this.catalogParams.getLanguageTagById(project.data.language, true);
     metaTags.push(languageTag);
     metaTags.push({
       id: project.data.project_type_id,
@@ -96,7 +98,7 @@ export class MangaDraftExtension implements ExtensionImpl<typeof MangaDraftConfi
         title: "Original",
       });
     }
-    metaTags.push(this.catalogParams!.getFormatTagByValue(project.data.publication_type));
+    metaTags.push(this.catalogParams.getFormatTagByValue(project.data.publication_type));
     metaTags.push({
       id: "access:" + project.data.publication_mode,
       title: ACCESS_TYPES[project.data.publication_mode] || project.data.publication_mode_label,
@@ -140,7 +142,7 @@ export class MangaDraftExtension implements ExtensionImpl<typeof MangaDraftConfi
         secondaryTitles: [],
         contentRating: contentRating,
         contentType: "comic",
-        status: this.catalogParams!.getStatusTagById(project.data.project_status_id)!.title,
+        status: this.catalogParams.getStatusTagById(project.data.project_status_id).title,
         author: project.data.user.name,
         bannerUrl: project.data.background,
         shareUrl: project.data.url,
@@ -287,8 +289,8 @@ export class MangaDraftExtension implements ExtensionImpl<typeof MangaDraftConfi
   async getAdvancedSearchForm(
     query: SearchQuery<ProjectSearchMetadata>,
   ): Promise<AdvancedSearchForm> {
-    await this.catalogParams!.loadIfNeeded();
-    return new ProjectSearchForm(query, this.catalogParams!);
+    await this.catalogParams.loadIfNeeded();
+    return new ProjectSearchForm(query, this.catalogParams);
   }
 
   // Populates search
@@ -354,6 +356,10 @@ export class MangaDraftExtension implements ExtensionImpl<typeof MangaDraftConfi
     } else {
       return Promise.resolve(SORT_OPTIONS);
     }
+  }
+
+  getSettingsForm(): Promise<Form> {
+    return Promise.resolve(new SettingsForm(this.catalogParams, this.homePage));
   }
 }
 
